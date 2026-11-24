@@ -1,2 +1,2 @@
-# SpriteBound
-a Platformer for the Thumby Color
+# MicroArcade
+a game library for the Thumby Color
