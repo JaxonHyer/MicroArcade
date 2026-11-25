@@ -30,8 +30,10 @@ def button_autorepeat(name):
 
 def release_buttons():
     try:
-        release_buttons()
-    except (AttributeError, Exception):
+        release = getattr(engine_io, "release_all_buttons", None)
+        if release is not None:
+            release()
+    except Exception:
         pass
 
 

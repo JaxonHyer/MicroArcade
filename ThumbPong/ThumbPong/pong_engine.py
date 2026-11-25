@@ -48,6 +48,8 @@ class Ball:
         self.last_hitter = 0  # 0=neutral, 1=P1, 2=P2
         self.is_smash = False
         self.trail = []  # list of (x, y, hitter)
+        self.wall_lock = 0.0
+        self.paddle_lock = 0.0
 
 
 class PowerUpOrb:
@@ -579,6 +581,18 @@ class PongGame:
         surviving_balls = []
         goals = []
         for ball in self.balls:
+            if ball.wall_lock > 0.0:
+                ball.wall_lock = max(0.0, ball.wall_lock - dt)
+            if ball.paddle_lock > 0.0:
+                ball.paddle_lock = max(0.0, ball.paddle_lock - dt)
+
+            if not (math.isfinite(ball.x) and math.isfinite(ball.y)
+                    and math.isfinite(ball.vx) and math.isfinite(ball.vy)):
+                ball.x = 64.0
+                ball.y = COURT_MID_Y
+                ball.vx = self.serve_dir * ball.speed
+                ball.vy = 0.0
+
             # Record trail point
             ball.trail.append((ball.x, ball.y, ball.last_hitter, ball.is_smash))
             if len(ball.trail) > 7:
@@ -596,21 +610,24 @@ class PongGame:
                 ball.y += ball.vy * sub_dt
 
                 # Top / Bottom walls
-                if ball.y - BALL_RADIUS <= COURT_TOP + 1:
-                    ball.y = COURT_TOP + 1 + BALL_RADIUS
-                    ball.vy = abs(ball.vy)
-                    self._emit_sparks(ball.x, COURT_TOP + 2, theme["border"], count=4, speed_min=20.0, speed_max=65.0, life=0.22, size=1)
-                    if self.state == "playing":
-                        self.ah.play("wall")
-                elif ball.y + BALL_RADIUS >= COURT_BOTTOM - 1:
-                    ball.y = COURT_BOTTOM - 1 - BALL_RADIUS
-                    ball.vy = -abs(ball.vy)
-                    self._emit_sparks(ball.x, COURT_BOTTOM - 2, theme["border"], count=4, speed_min=20.0, speed_max=65.0, life=0.22, size=1)
-                    if self.state == "playing":
-                        self.ah.play("wall")
+                if ball.wall_lock <= 0.0:
+                    if ball.y - BALL_RADIUS <= COURT_TOP + 1:
+                        ball.y = COURT_TOP + 1 + BALL_RADIUS
+                        ball.vy = abs(ball.vy)
+                        ball.wall_lock = 0.025
+                        self._emit_sparks(ball.x, COURT_TOP + 2, theme["border"], count=4, speed_min=20.0, speed_max=65.0, life=0.22, size=1)
+                        if self.state == "playing":
+                            self.ah.play("wall")
+                    elif ball.y + BALL_RADIUS >= COURT_BOTTOM - 1:
+                        ball.y = COURT_BOTTOM - 1 - BALL_RADIUS
+                        ball.vy = -abs(ball.vy)
+                        ball.wall_lock = 0.025
+                        self._emit_sparks(ball.x, COURT_BOTTOM - 2, theme["border"], count=4, speed_min=20.0, speed_max=65.0, life=0.22, size=1)
+                        if self.state == "playing":
+                            self.ah.play("wall")
 
                 # Left paddle collision
-                if ball.vx < 0:
+                if ball.paddle_lock <= 0.0 and ball.vx < 0:
                     p1_right = self.p1.x + PADDLE_W
                     if (
                         ball.x - BALL_RADIUS <= p1_right
@@ -618,14 +635,16 @@ class PongGame:
                         and abs(ball.y - self.p1.y) <= (self.p1.height * 0.5 + BALL_RADIUS)
                     ):
                         self._handle_paddle_hit(ball, self.p1, True, theme)
+                        ball.paddle_lock = 0.025
                 # Right paddle collision
-                elif ball.vx > 0:
+                elif ball.paddle_lock <= 0.0 and ball.vx > 0:
                     if (
                         ball.x + BALL_RADIUS >= self.p2.x
                         and ball.x - BALL_RADIUS <= self.p2.x + PADDLE_W + 1
                         and abs(ball.y - self.p2.y) <= (self.p2.height * 0.5 + BALL_RADIUS)
                     ):
                         self._handle_paddle_hit(ball, self.p2, False, theme)
+                        ball.paddle_lock = 0.025
 
                 # Powerup orb collision
                 if self.powerups:

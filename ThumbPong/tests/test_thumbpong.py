@@ -365,6 +365,35 @@ class TestThumbPongGameplayAndRender(unittest.TestCase):
         self.assertIsNone(state["indicator"])
         self.assertEqual(state["rumble"], 0.0)
 
+    def test_wall_and_paddle_collisions_do_not_crash(self):
+        state, fb, _ = install_mock_engine()
+        from themes import get_theme
+        from storage import SaveStore
+        from audio_haptics import AudioHaptics
+        from pong_engine import PongGame, Ball, COURT_TOP, COURT_BOTTOM
+        from renderer import Renderer
+
+        game = PongGame(SaveStore(), AudioHaptics(True, True))
+        game.start_match("1p")
+        renderer = Renderer()
+        game.balls = [
+            Ball(64.0, COURT_TOP + 4.0, 40.0, -180.0, 185.0),
+            Ball(64.0, COURT_BOTTOM - 4.0, -40.0, 180.0, 185.0),
+        ]
+
+        for _ in range(300):
+            game.step_simulation(1.0 / 60.0, {"up": True, "a": False}, get_theme(0))
+            renderer.render(game)
+
+        game.balls = [Ball(10.0, game.p1.y, -180.0, 0.0, 185.0)]
+        for _ in range(100):
+            game.step_simulation(1.0 / 60.0, {}, get_theme(0))
+            renderer.render(game)
+
+        for ball in game.balls:
+            self.assertNotIn("nan", str(ball.x).lower())
+            self.assertNotIn("nan", str(ball.y).lower())
+
 
 if __name__ == "__main__":
     unittest.main()
