@@ -13,22 +13,44 @@ from renderer import Renderer
 WIN_SCORES = (5, 7, 11)
 
 
+def button_pressed(name):
+    button = getattr(engine_io, name, None)
+    return bool(button is not None and getattr(button, "is_pressed", False))
+
+
+def button_just_pressed(name):
+    button = getattr(engine_io, name, None)
+    return bool(button is not None and getattr(button, "is_just_pressed", False))
+
+
+def button_autorepeat(name):
+    button = getattr(engine_io, name, None)
+    return bool(button is not None and getattr(button, "is_pressed_autorepeat", False))
+
+
+def release_buttons():
+    try:
+        release_buttons()
+    except (AttributeError, Exception):
+        pass
+
+
 def read_inputs():
     return {
-        "up": engine_io.UP.is_pressed,
-        "down": engine_io.DOWN.is_pressed,
-        "up_nav": engine_io.UP.is_pressed_autorepeat,
-        "down_nav": engine_io.DOWN.is_pressed_autorepeat,
-        "left_just": engine_io.LEFT.is_just_pressed,
-        "right_just": engine_io.RIGHT.is_just_pressed,
-        "a": engine_io.A.is_pressed,
-        "b": engine_io.B.is_pressed,
-        "a_just": engine_io.A.is_just_pressed,
-        "b_just": engine_io.B.is_just_pressed,
-        "lb_just": engine_io.LB.is_just_pressed,
-        "rb_just": engine_io.RB.is_just_pressed,
-        "rb": engine_io.RB.is_pressed,
-        "menu_just": engine_io.MENU.is_just_pressed,
+        "up": button_pressed("UP"),
+        "down": button_pressed("DOWN"),
+        "up_nav": button_autorepeat("UP"),
+        "down_nav": button_autorepeat("DOWN"),
+        "left_just": button_just_pressed("LEFT"),
+        "right_just": button_just_pressed("RIGHT"),
+        "a": button_pressed("A"),
+        "b": button_pressed("B"),
+        "a_just": button_just_pressed("A"),
+        "b_just": button_just_pressed("B"),
+        "lb_just": button_just_pressed("LB"),
+        "rb_just": button_just_pressed("RB"),
+        "rb": button_pressed("RB"),
+        "menu_just": button_just_pressed("MENU"),
     }
 
 
@@ -58,7 +80,7 @@ def handle_title(game, inp, store, ah):
 
     if inp["a_just"]:
         ah.play("menu_ok")
-        engine_io.release_all_buttons()
+        release_buttons()
         if game.title_idx == 0:
             game.start_match("1p")
         elif game.title_idx == 1:
@@ -127,7 +149,7 @@ def handle_options(game, inp, store, ah):
 def handle_pause(game, inp, store, ah):
     if inp["menu_just"] or inp["b_just"]:
         ah.play("menu_ok")
-        engine_io.release_all_buttons()
+        release_buttons()
         game.state = "playing"
         return
 
@@ -147,11 +169,11 @@ def handle_pause(game, inp, store, ah):
     if delta != 0:
         if game.pause_idx == 0 and inp["a_just"]:
             ah.play("menu_ok")
-            engine_io.release_all_buttons()
+            release_buttons()
             game.state = "playing"
         elif game.pause_idx == 1 and inp["a_just"]:
             ah.play("menu_ok")
-            engine_io.release_all_buttons()
+            release_buttons()
             game.start_match(game.mode)
         elif game.pause_idx == 2:
             cycle_theme(game, store, ah, delta)
@@ -167,18 +189,18 @@ def handle_pause(game, inp, store, ah):
             ah.play("menu_move")
         elif game.pause_idx == 5 and inp["a_just"]:
             ah.play("menu_ok")
-            engine_io.release_all_buttons()
+            release_buttons()
             game.start_attract_demo()
 
 
 def handle_gameover(game, inp, ah):
     if inp["a_just"]:
         ah.play("menu_ok")
-        engine_io.release_all_buttons()
+        release_buttons()
         game.start_match(game.mode)
     elif inp["b_just"] or inp["menu_just"]:
         ah.play("menu_ok")
-        engine_io.release_all_buttons()
+        release_buttons()
         game.start_attract_demo()
 
 

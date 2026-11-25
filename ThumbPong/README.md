@@ -45,7 +45,7 @@ A vibrant, full-color Pong remake built specifically for the **TinyCircuits Thum
 ## Installing on Thumby Color
 
 1. Connect your Thumby Color via USB-C and open **Thonny IDE** (with MicroPython Raspberry Pi Pico interpreter) or the **Thumby Color Code Editor**.
-2. Copy the contents of this repository into `/Games/ThumbPong/` on your Thumby Color filesystem:
+2. Copy the contents of `ThumbPong/ThumbPong/` into `/Games/ThumbPong/` on your Thumby Color filesystem:
    - `manifest.ini`
    - `main.py`
    - `icon.bmp`

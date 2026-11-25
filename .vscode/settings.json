@@ -11,6 +11,10 @@
         "/^python3 -m unittest discover -s Micro-Moto/tests -v$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^python3 -m unittest discover -s ThumbPong/tests -v$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
