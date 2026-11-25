@@ -3,6 +3,14 @@
         "/^python3 tools/generate_thumby_icon\\.py SpriteBound/game/icon\\.bmp && python3 -m unittest discover -s SpriteBound/tests -v$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^python3 tools/generate_thumby_icon\\.py Micro-Moto/game/icon\\.bmp$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python3 -m unittest discover -s Micro-Moto/tests -v$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
